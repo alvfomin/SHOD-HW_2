@@ -1,0 +1,97 @@
+SQL QUERIES FOR 2nd HW:
+
+CREATING DATABASE:
+create Table customers (
+  customer_id int4 primary key, 
+  first_name varchar(50),
+  last_name varchar(50),
+  gender varchar(30),
+  dob varchar(50),
+  job_title varchar(50),
+  job_industry_category varchar(50),
+  wealth_segment varchar(50),
+  deceased_indicator varchar(50),
+  owns_car varchar(30),
+  address varchar(50),
+  postcode varchar(30),
+  state varchar(30), 
+  country varchar(30),
+  property_valuation int4
+);
+
+create Table transactions (
+  transaction_id int4 primary key,
+  product_id int4,
+  customer_id int4,
+  transaction_date varchar(30),
+  online_order varchar(30),
+  order_status varchar(30),
+  brand varchar(30),
+  product_line varchar(30),
+  product_class varchar(30),
+  product_size varchar(30),
+  list_price float4,
+  standard_cost float4,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+TASKS:
+/ задание 1
+SELECT DISTINCT brand
+FROM transactions
+WHERE standard_cost > 1500;
+
+/ задание 2
+SELECT *
+FROM transactions
+WHERE LOWER(order_status) = 'approved'
+  AND TO_DATE(transaction_date, 'DD.MM.YYYY') BETWEEN '2017-04-01' AND '2017-04-09';
+
+/ задание 3
+SELECT DISTINCT job_title
+FROM customers
+WHERE (job_industry_category = 'IT' OR job_industry_category = 'Financial Services')
+  AND job_title LIKE 'Senior%';
+
+/ задание 4
+SELECT DISTINCT t.brand
+FROM transactions t
+JOIN customers c ON t.customer_id = c.customer_id
+WHERE c.job_industry_category = 'Financial Services';
+
+/ задание 5
+SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN transactions t ON c.customer_id = t.customer_id
+WHERE t.online_order = 'True'
+  AND t.brand IN ('Giant Bicycles', 'Norco Bicycles', 'Trek Bicycles')
+LIMIT 10;
+
+/ задание 6
+SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+LEFT JOIN transactions t ON c.customer_id = t.customer_id
+WHERE t.transaction_id IS NULL;
+
+/ задание 7
+WITH MaxTransactionCTE AS (
+  SELECT customer_id, MAX(standard_cost) AS max_standard_cost
+  FROM transactions
+  GROUP BY customer_id
+) 
+SELECT c.customer_id, c.first_name, c.last_name, t.standard_cost
+FROM customers c
+JOIN transactions t ON c.customer_id = t.customer_id
+JOIN MaxTransactionCTE m ON t.customer_id = m.customer_id AND t.standard_cost = m.max_standard_cost
+WHERE c.job_industry_category = 'IT';
+
+/ задание 8
+SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN transactions t ON c.customer_id = t.customer_id
+WHERE c.job_industry_category IN ('IT', 'Health')
+  AND t.order_status = 'Approved'
+  AND TO_DATE(t.transaction_date, 'DD.MM.YYYY') BETWEEN '2017-07-07' AND '2017-07-17';
+
+
+
